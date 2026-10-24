@@ -25,7 +25,15 @@ const spaceGrotesk = Space_Grotesk({
   weight: ["500", "600", "700"],
 });
 
+// Vercel sets this automatically on every deploy, so the OG image resolves to
+// a real absolute URL in production with zero manual config. Falls back to
+// localhost for local dev.
+const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: `${SITE_NAME}`,
   description: SITE_TAGLINE,
   openGraph: {
