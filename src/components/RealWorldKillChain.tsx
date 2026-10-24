@@ -6,6 +6,7 @@ import { Play, Pause, RotateCcw, Check, ChevronDown, ShieldCheck } from "lucide-
 import { REAL_WORLD_STAGES } from "@/lib/real-world-kill-chain";
 import { TerminalPanel } from "@/components/TerminalPanel";
 import { ExploitFlowDiagram } from "@/components/ExploitFlowDiagram";
+import { MemoryStateDiagram } from "@/components/MemoryStateDiagram";
 import { CodeComparison } from "@/components/CodeComparison";
 import { cn } from "@/lib/utils";
 
@@ -148,6 +149,28 @@ export function RealWorldKillChain() {
         >
           <TerminalPanel lines={stage.logLines} live={playing} accentColor={stage.colorFrom} runKey={runId} />
           <p className="mt-3 mb-4 text-sm text-muted-foreground leading-relaxed">{stage.detail}</p>
+
+          {stage.id === "the-flaw" && (
+            <div className="mb-4 rounded-lg border border-border bg-card/50 p-3">
+              <h4 className="text-xs font-semibold mb-1 text-muted-foreground uppercase tracking-wide">
+                The shared pattern, abstracted
+              </h4>
+              <MemoryStateDiagram active={playing} accentColor={stage.colorFrom} runKey={runId} />
+            </div>
+          )}
+
+          {stage.stats && (
+            <div className="grid grid-cols-2 gap-2 mb-4 sm:grid-cols-4">
+              {stage.stats.map((s) => (
+                <div key={s.label} className="rounded-lg border border-border bg-card/50 p-3 text-center">
+                  <div className="font-heading text-lg font-bold" style={{ color: stage.colorFrom }}>
+                    {s.value}
+                  </div>
+                  <div className="mt-0.5 text-[11px] leading-tight text-muted-foreground">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {stage.example && (
             <div className="mb-4">

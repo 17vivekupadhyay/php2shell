@@ -23,6 +23,8 @@ export interface IncidentStage {
     secure: string;
     language?: string;
   };
+  /** Headline stats for this stage, shown as a card grid instead of a bullet list. */
+  stats?: { value: string; label: string }[];
 }
 
 export const REAL_WORLD_STAGES: IncidentStage[] = [
@@ -90,6 +92,12 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
     ],
     colorFrom: "#fbbf24",
     colorTo: "#d97706",
+    stats: [
+      { value: "70–77%", label: "of public web servers run PHP" },
+      { value: "300+", label: "government sites audited (Pakistan alone)" },
+      { value: "NSA · NCSC", label: "national agencies issued advisories" },
+      { value: "2", label: "major platforms took precautionary outages (Wikipedia, Internet Archive)" },
+    ],
   },
   {
     id: "the-fix",
