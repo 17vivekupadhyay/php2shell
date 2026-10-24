@@ -3,6 +3,8 @@ export interface AttackTechnique {
   name: string;
   detail: string;
   defense: string;
+  /** Simulated commands for this specific path — picking this technique replays the terminal with these. */
+  terminalLines?: string[];
 }
 
 export interface StageReference {

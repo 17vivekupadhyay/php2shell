@@ -18,9 +18,11 @@ import {
 import { ATTACK_STAGES } from "@/lib/attack-chain";
 import { CodeComparison } from "@/components/CodeComparison";
 import { TerminalPanel } from "@/components/TerminalPanel";
+import { ExploitFlowDiagram } from "@/components/ExploitFlowDiagram";
 import { cn } from "@/lib/utils";
 
 const AUTOPLAY_MS = 4200;
+const TECHNIQUE_TYPE_WINDOW_MS = 4000;
 
 export function KillChain() {
   // Always starts at stage 1 on both server and client renders, so hydration
@@ -29,6 +31,8 @@ export function KillChain() {
   const [playing, setPlaying] = useState(false);
   const [visited, setVisited] = useState<Set<number>>(() => new Set([0]));
   const [openTechnique, setOpenTechnique] = useState<string | null>(null);
+  const [selectedTechniqueId, setSelectedTechniqueId] = useState<string | null>(null);
+  const [techTyping, setTechTyping] = useState(false);
   const [justLanded, setJustLanded] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [runId, setRunId] = useState(0);
@@ -36,12 +40,28 @@ export function KillChain() {
 
   const stage = ATTACK_STAGES[activeIndex];
   const lastIndex = ATTACK_STAGES.length - 1;
+  const selectedTechnique = stage.techniques.find((t) => t.id === selectedTechniqueId) ?? null;
+  const activeLines = selectedTechnique?.terminalLines ?? stage.terminalLines;
 
   function goTo(i: number) {
     const clamped = Math.max(0, Math.min(lastIndex, i));
     setActiveIndex(clamped);
     setVisited((prev) => new Set(prev).add(clamped));
     setOpenTechnique(null);
+    setSelectedTechniqueId(null);
+  }
+
+  // Picking a technique chooses that attack path: the terminal replays with
+  // that technique's own commands instead of the stage's default sequence.
+  function selectTechnique(id: string) {
+    const willOpen = openTechnique !== id;
+    setOpenTechnique(willOpen ? id : null);
+    setSelectedTechniqueId(willOpen ? id : null);
+    if (willOpen) {
+      setRunId((r) => r + 1);
+      setTechTyping(true);
+      setTimeout(() => setTechTyping(false), TECHNIQUE_TYPE_WINDOW_MS);
+    }
   }
 
   // Restore a deep-linked stage once mounted (post-hydration), then keep the
@@ -315,6 +335,12 @@ export function KillChain() {
       </div>
 
       {/* Live terminal */}
+      <ExploitFlowDiagram
+        active={playing || techTyping}
+        accentColor={stage.colorFrom}
+        label={selectedTechnique ? selectedTechnique.name : stage.title}
+        runKey={`${activeIndex}-${runId}`}
+      />
       <AnimatePresence mode="wait">
         <motion.div
           key={`terminal-${stage.id}`}
@@ -325,15 +351,22 @@ export function KillChain() {
           className="mb-3"
         >
           <TerminalPanel
-            lines={stage.terminalLines}
-            live={playing || justLanded}
+            lines={activeLines}
+            live={playing || justLanded || techTyping}
             accentColor={stage.colorFrom}
             runKey={runId}
           />
         </motion.div>
       </AnimatePresence>
       <p className="mb-8 text-center text-xs text-muted-foreground">
-        Simulated terminal output — illustrative only, nothing here is executed.
+        {selectedTechnique ? (
+          <>
+            Showing path: <span className="font-medium text-foreground">{selectedTechnique.name}</span> — simulated,
+            illustrative only.
+          </>
+        ) : (
+          "Simulated terminal output — illustrative only, nothing here is executed."
+        )}
       </p>
 
       {/* Detail panel */}
@@ -404,19 +437,32 @@ export function KillChain() {
 
           <div className="border-t border-border p-6">
             <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
-              Techniques at this stage — tap for the defense
+              Choose the attacker&apos;s path — tap a technique to replay the terminal with it
             </h3>
             <div className="grid gap-2 sm:grid-cols-2">
               {stage.techniques.map((t) => {
                 const open = openTechnique === t.id;
                 return (
-                  <div key={t.id} className="rounded-lg border border-border overflow-hidden">
+                  <div
+                    key={t.id}
+                    className={cn("rounded-lg border overflow-hidden transition-colors", open ? "border-transparent" : "border-border")}
+                    style={open ? { borderColor: `${stage.colorFrom}80`, boxShadow: `0 0 0 1px ${stage.colorFrom}80` } : undefined}
+                  >
                     <button
-                      onClick={() => setOpenTechnique(open ? null : t.id)}
+                      onClick={() => selectTechnique(t.id)}
                       className="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-left hover:bg-accent/50 transition-colors"
                       aria-expanded={open}
                     >
-                      <span className="text-sm font-medium">{t.name}</span>
+                      <span className="flex items-center gap-2 text-sm font-medium">
+                        {open && (
+                          <span
+                            className="h-1.5 w-1.5 shrink-0 rounded-full"
+                            style={{ backgroundColor: stage.colorFrom }}
+                            aria-hidden
+                          />
+                        )}
+                        {t.name}
+                      </span>
                       <ChevronDown className={cn("h-4 w-4 text-muted-foreground shrink-0 transition-transform", open && "rotate-180")} />
                     </button>
                     <AnimatePresence initial={false}>
