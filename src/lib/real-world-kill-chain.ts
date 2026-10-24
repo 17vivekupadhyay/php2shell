@@ -1,8 +1,23 @@
+export interface RequestStep {
+  method: string;
+  path: string;
+  contentType: string;
+  /** What the body conceptually contains — deliberately redacted, never the real structure/values. */
+  bodyNote: string;
+  /** What happens server-side once this request lands. */
+  resultNote: string;
+  /** True if this step is a dangerous/critical moment, for visual emphasis. */
+  critical?: boolean;
+}
+
 export interface IncidentTechnique {
   id: string;
   name: string;
   detail: string;
   defense: string;
+  /** An animated, redacted request sequence showing the shape of the exploit without its working content. */
+  requests?: RequestStep[];
+  finalResult: string;
 }
 
 export interface IncidentStage {
@@ -67,6 +82,24 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
         detail:
           "A specially crafted file-upload request can push PHP's memory usage past its configured limit while the request body itself stays small, by exploiting how PHP expands deeply nested form-field names into many internal lookup-table entries. If that memory limit is hit at exactly the moment PHP is registering one of those entries, the entry is left half-built — but PHP's internal bookkeeping already counted it as valid. When the request ends, PHP's normal teardown logic processes that half-built entry as if it were real, which an attacker can turn into code execution.",
         defense: "No app-level mitigation exists — this is inside the interpreter. Upgrade to 8.5.12 / 8.4.27 / 8.3.36 / 8.2.35.",
+        finalResult: "Half-built entry processed as real during teardown → attacker-influenced execution",
+        requests: [
+          {
+            method: "POST",
+            path: "/upload.php",
+            contentType: "multipart/form-data; boundary=…",
+            bodyNote: "deeply nested field names — exact structure withheld",
+            resultNote: "PHP expands the nesting into many internal table entries while parsing",
+          },
+          {
+            method: "—",
+            path: "(same request, still parsing)",
+            contentType: "—",
+            bodyNote: "memory usage climbs past the configured limit mid-registration",
+            resultNote: "Fatal hits exactly between \"mark entry live\" and \"finish building it\"",
+            critical: true,
+          },
+        ],
       },
       {
         id: "fpm-path",
@@ -74,6 +107,24 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
         detail:
           "PHP-FPM keeps worker processes alive across many requests for performance, and its \"upload progress\" feature can start tracking a session before the rest of PHP has finished initializing for that request. If a request is interrupted at just the right point, PHP frees that request's memory but leaves global pointers still referencing it — and because the worker survives, a second, unrelated request can reach those dangling pointers through the same upload-progress feature and cause PHP to treat freed memory as live data again.",
         defense: "Same fix: upgrade PHP. Disabling session.upload_progress may reduce exposure to the related issue, but the researchers are clear it isn't a substitute for patching.",
+        finalResult: "Second request's cleanup logic treats freed memory from the first as live session data",
+        requests: [
+          {
+            method: "POST",
+            path: "/page.php",
+            contentType: "multipart/form-data; boundary=…",
+            bodyNote: "session ID + upload-progress field + a file part — trigger timing withheld",
+            resultNote: "Session tracking starts early, then this worker's request is interrupted",
+            critical: true,
+          },
+          {
+            method: "POST",
+            path: "/page.php",
+            contentType: "multipart/form-data; boundary=…",
+            bodyNote: "same session ID + upload-progress field, no file part this time",
+            resultNote: "Reaches cleanup logic for the earlier session on the same worker",
+          },
+        ],
       },
     ],
   },

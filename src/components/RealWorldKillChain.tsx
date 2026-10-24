@@ -7,6 +7,7 @@ import { REAL_WORLD_STAGES } from "@/lib/real-world-kill-chain";
 import { TerminalPanel } from "@/components/TerminalPanel";
 import { ExploitFlowDiagram } from "@/components/ExploitFlowDiagram";
 import { MemoryStateDiagram } from "@/components/MemoryStateDiagram";
+import { RequestExploitAnimation } from "@/components/RequestExploitAnimation";
 import { CodeComparison } from "@/components/CodeComparison";
 import { cn } from "@/lib/utils";
 
@@ -211,6 +212,13 @@ export function RealWorldKillChain() {
                           className="px-3.5 pb-3.5 space-y-2"
                         >
                           <p className="text-xs text-muted-foreground leading-relaxed">{t.detail}</p>
+                          {t.requests && (
+                            <RequestExploitAnimation
+                              requests={t.requests}
+                              finalResult={t.finalResult}
+                              accentColor={stage.colorFrom}
+                            />
+                          )}
                           <div className="flex items-start gap-1.5 text-xs text-green-400">
                             <ShieldCheck className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                             <span className="leading-relaxed">{t.defense}</span>
