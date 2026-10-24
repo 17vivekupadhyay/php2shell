@@ -11,8 +11,8 @@ export const ATTACK_STAGES: AttackStage[] = [
       "The attacker finds an entry point where their data reaches a dangerous PHP sink: an upload handler that trusts filenames, a page parameter fed into include(), or user input rendered as template source. This is where untrusted data first crosses into the application's trust boundary.",
     defenderNote:
       "Almost every stage after this one is preventable if this first crossing is stopped — allow-list validation here is the highest-leverage fix on this whole chain.",
-    colorFrom: "#3b82f6",
-    colorTo: "#2563eb",
+    colorFrom: "#a5aed6",
+    colorTo: "#8993be",
     example: {
       vulnerable: `<?php
 // upload.php
@@ -69,8 +69,8 @@ move_uploaded_file($_FILES['avatar']['tmp_name'], '/var/app/uploads_private/' . 
       "Having found an injection point, the attacker determines which command-execution primitives are actually callable in this environment. They test shell_exec, system, exec, passthru, proc_open and look for disable_functions restrictions, open_basedir limits, or WAF filtering that must be bypassed.",
     defenderNote:
       "disable_functions and open_basedir are real speed bumps here — they don't fix the injection, but they can turn a working exploit into a dead end.",
-    colorFrom: "#8b5cf6",
-    colorTo: "#7c3aed",
+    colorFrom: "#8993be",
+    colorTo: "#6c76a8",
     example: {
       vulnerable: `; php.ini
 disable_functions =
@@ -114,8 +114,8 @@ disable_classes =
       "With a working sink confirmed, the attacker executes commands with the privileges of the web server process (typically www-data, apache, or nginx). They commonly drop a web shell for persistence or pivot directly to a reverse shell back to an attacker-controlled listener.",
     defenderNote:
       "This is where least-privilege process isolation pays off — a www-data user that can't write to the webroot or reach the internal network limits everything downstream.",
-    colorFrom: "#dc2626",
-    colorTo: "#b91c1c",
+    colorFrom: "#6c76a8",
+    colorTo: "#4f5b93",
     example: {
       vulnerable: `<?php
 // ping.php
@@ -166,8 +166,8 @@ echo '<pre>' . htmlspecialchars($output ?? '') . '</pre>';`,
       "www-data rarely has the access an attacker wants. They enumerate SUID binaries, sudo -l output, writable files owned by root, and kernel version for known local-privilege-escalation exploits, aiming to move from a low-privilege web user to root or another high-value account.",
     defenderNote:
       "A disciplined patch cadence directly removes exploits from this stage's toolbox — most local privesc chains rely on a known, already-fixed CVE.",
-    colorFrom: "#ea580c",
-    colorTo: "#c2410c",
+    colorFrom: "#5b4b8a",
+    colorTo: "#453a73",
     techniques: [
       {
         id: "suid-abuse",
@@ -205,8 +205,8 @@ echo '<pre>' . htmlspecialchars($output ?? '') . '</pre>';`,
       "To survive a reboot or the original vulnerability being patched, the attacker plants durable access: a cron job that reconnects periodically, an SSH key added to authorized_keys, or additional web shells scattered across the filesystem.",
     defenderNote:
       "This is why patching the original hole is never the whole fix — a compromised host needs a full audit (cron, authorized_keys, webroot) before it's trusted again.",
-    colorFrom: "#be123c",
-    colorTo: "#9f1239",
+    colorFrom: "#453a73",
+    colorTo: "#2e2659",
     techniques: [
       {
         id: "cron-backdoor",

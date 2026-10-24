@@ -5,6 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* PHP's own brand purple (the elephant-logo colorway), used for all
+     primary/brand accents across the site. */
+  --color-php: #8993be;
+  --color-php-light: #a5aed6;
+  --color-php-dark: #4f5b93;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);

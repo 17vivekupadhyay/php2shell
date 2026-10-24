@@ -91,7 +91,7 @@ export function KillChain() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setPlaying((p) => !p)}
-            className="inline-flex items-center gap-1.5 rounded-full bg-red-600 hover:bg-red-500 text-white text-sm font-medium px-4 py-2 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full bg-php hover:bg-php-light text-white text-sm font-medium px-4 py-2 transition-colors"
             aria-label={playing ? "Pause autoplay" : "Play attack chain"}
           >
             {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
@@ -117,7 +117,7 @@ export function KillChain() {
       {/* Overall progress bar */}
       <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-8">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-blue-500 via-orange-500 to-rose-600"
+          className="h-full rounded-full bg-gradient-to-r from-php-light via-php to-php-dark"
           animate={{ width: `${((activeIndex + 1) / ATTACK_STAGES.length) * 100}%` }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
         />
@@ -127,7 +127,7 @@ export function KillChain() {
       <div className="hidden md:block relative mb-10">
         <div className="absolute left-0 right-0 top-7 h-0.5 bg-border" />
         <motion.div
-          className="absolute left-0 top-7 h-0.5 bg-gradient-to-r from-blue-500 via-orange-500 to-rose-600"
+          className="absolute left-0 top-7 h-0.5 bg-gradient-to-r from-php-light via-php to-php-dark"
           animate={{ width: `${progressPct}%` }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
         />

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Terminal, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GitHubIcon, LinkedInIcon } from "@/components/icons/SocialIcons";
-import { SITE_NAME } from "@/lib/constants";
+import { SITE_NAME, GITHUB_URL, LINKEDIN_URL } from "@/lib/constants";
 import { useTheme } from "@/hooks/useTheme";
 
 export function Navbar() {
@@ -14,7 +14,7 @@ export function Navbar() {
     <header className="border-b border-border bg-background">
       <div className="mx-auto flex h-16 max-w-4xl items-center gap-2 px-4">
         <Link href="/" className="flex items-center gap-2 font-heading font-bold tracking-tight">
-          <Terminal className="h-5 w-5 text-red-500" aria-hidden />
+          <Terminal className="h-5 w-5 text-php" aria-hidden />
           {SITE_NAME}
         </Link>
 
@@ -27,7 +27,7 @@ export function Navbar() {
             size="icon"
             aria-label="GitHub"
             nativeButton={false}
-            render={<a href="https://github.com" target="_blank" rel="noopener noreferrer" />}
+            render={<a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" />}
           >
             <GitHubIcon className="h-4 w-4" />
           </Button>
@@ -36,7 +36,7 @@ export function Navbar() {
             size="icon"
             aria-label="LinkedIn"
             nativeButton={false}
-            render={<a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" />}
+            render={<a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" />}
           >
             <LinkedInIcon className="h-4 w-4" />
           </Button>
