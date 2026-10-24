@@ -1,9 +1,12 @@
-import { AlertTriangle, ExternalLink, ShieldAlert } from "lucide-react";
+import { AlertTriangle, ExternalLink, ShieldAlert, BadgeCheck } from "lucide-react";
 import { REAL_WORLD_ALERT } from "@/lib/real-world-alert";
 import { RealWorldKillChain } from "@/components/RealWorldKillChain";
+import { UnderstandingCheck } from "@/components/UnderstandingCheck";
 
 export function RealWorldAlert() {
   const a = REAL_WORLD_ALERT;
+  const primarySource = a.sources.find((s) => s.primary);
+  const otherSources = a.sources.filter((s) => !s.primary);
 
   return (
     <div className="rounded-2xl border border-red-500/40 bg-red-500/[0.06] overflow-hidden">
@@ -23,7 +26,27 @@ export function RealWorldAlert() {
       </div>
 
       <div className="p-5 space-y-4">
+        {primarySource && (
+          <a
+            href={primarySource.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/10 px-3.5 py-2.5 text-sm transition-colors hover:bg-green-500/15"
+          >
+            <BadgeCheck className="h-4 w-4 shrink-0 text-green-400" />
+            <span className="text-green-200">
+              Read PHP&apos;s own official advisory <span className="text-green-300/70">— {primarySource.title}</span>
+            </span>
+            <ExternalLink className="ml-auto h-3.5 w-3.5 shrink-0 text-green-400" />
+          </a>
+        )}
+
         <p className="text-sm text-muted-foreground leading-relaxed">{a.summary}</p>
+
+        <div className="rounded-lg border border-border bg-card/50 p-3">
+          <h3 className="text-xs font-semibold mb-1 text-muted-foreground uppercase tracking-wide">Who&apos;s at risk</h3>
+          <p className="text-xs leading-relaxed text-muted-foreground">{a.atRisk}</p>
+        </div>
 
         <div className="rounded-xl border border-border bg-card/50 p-4">
           <RealWorldKillChain />
@@ -31,6 +54,10 @@ export function RealWorldAlert() {
             This timeline covers public events and the conceptual mechanism only — no exploit trigger or payload
             details are included, since both CVEs were under active exploitation at the time this was written.
           </p>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card/50 p-4">
+          <UnderstandingCheck />
         </div>
 
         <div>
@@ -50,7 +77,7 @@ export function RealWorldAlert() {
         <div>
           <h3 className="text-sm font-semibold mb-2">Sources</h3>
           <ul className="space-y-1">
-            {a.sources.map((s) => (
+            {otherSources.map((s) => (
               <li key={s.url}>
                 <a
                   href={s.url}

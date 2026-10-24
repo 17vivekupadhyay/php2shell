@@ -7,7 +7,9 @@ import { REAL_WORLD_STAGES } from "@/lib/real-world-kill-chain";
 import { TerminalPanel } from "@/components/TerminalPanel";
 import { ExploitFlowDiagram } from "@/components/ExploitFlowDiagram";
 import { MemoryStateDiagram } from "@/components/MemoryStateDiagram";
+import { DeploymentModelDiagram } from "@/components/DeploymentModelDiagram";
 import { RequestExploitAnimation } from "@/components/RequestExploitAnimation";
+import { PatchChecklist } from "@/components/PatchChecklist";
 import { CodeComparison } from "@/components/CodeComparison";
 import { cn } from "@/lib/utils";
 
@@ -152,12 +154,20 @@ export function RealWorldKillChain() {
           <p className="mt-3 mb-4 text-sm text-muted-foreground leading-relaxed">{stage.detail}</p>
 
           {stage.id === "the-flaw" && (
-            <div className="mb-4 rounded-lg border border-border bg-card/50 p-3">
-              <h4 className="text-xs font-semibold mb-1 text-muted-foreground uppercase tracking-wide">
-                The shared pattern, abstracted
-              </h4>
-              <MemoryStateDiagram active={playing} accentColor={stage.colorFrom} runKey={runId} />
-            </div>
+            <>
+              <div className="mb-4 rounded-lg border border-border bg-card/50 p-3">
+                <h4 className="text-xs font-semibold mb-1 text-muted-foreground uppercase tracking-wide">
+                  The shared pattern, abstracted
+                </h4>
+                <MemoryStateDiagram active={playing} accentColor={stage.colorFrom} runKey={runId} />
+              </div>
+              <div className="mb-4">
+                <h4 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wide">
+                  Why the same bug hits two deployment models differently
+                </h4>
+                <DeploymentModelDiagram />
+              </div>
+            </>
           )}
 
           {stage.stats && (
@@ -181,6 +191,12 @@ export function RealWorldKillChain() {
                 secureCode={stage.example.secure}
                 language={stage.example.language ?? "dockerfile"}
               />
+            </div>
+          )}
+
+          {stage.id === "the-fix" && (
+            <div className="mb-4">
+              <PatchChecklist />
             </div>
           )}
 

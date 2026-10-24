@@ -53,9 +53,10 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
     logLines: [
       "[2026-07-30 UTC] Calif + OpenAI + Wiz begin coordinated PHP audit w/ PHP Foundation",
       "[2026-08-01 UTC] first exploitable OOM-fatal surfaced within days of starting",
-      "[2026-10-21 09:14 UTC] php.net: emergency release — 8.5.12 / 8.4.27 / 8.3.36 / 8.2.35",
-      "[2026-10-21 11:02 UTC] first public reports of active exploitation attempts",
-      "[2026-10-22 02:00 UTC] NSA / UK NCSC issue joint advisory",
+      "[2026-10-20 UTC] php.net posts advance notice of an upcoming critical release",
+      "[2026-10-21 14:00 UTC] php.net: emergency release — 8.5.12 / 8.4.27 / 8.3.36 / 8.2.35",
+      "[2026-10-21 UTC] first public reports of active exploitation attempts",
+      "[2026-10-22 UTC] NSA / UK NCSC issue joint advisory",
     ],
     colorFrom: "#f87171",
     colorTo: "#dc2626",
@@ -81,7 +82,7 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
         name: "Apache / mod_php — dangling request-variable entry",
         detail:
           "A specially crafted file-upload request can push PHP's memory usage past its configured limit while the request body itself stays small, by exploiting how PHP expands deeply nested form-field names into many internal lookup-table entries. If that memory limit is hit at exactly the moment PHP is registering one of those entries, the entry is left half-built — but PHP's internal bookkeeping already counted it as valid. When the request ends, PHP's normal teardown logic processes that half-built entry as if it were real, which an attacker can turn into code execution.",
-        defense: "No app-level mitigation exists — this is inside the interpreter. Upgrade to 8.5.12 / 8.4.27 / 8.3.36 / 8.2.35.",
+        defense: "No app-level fix exists — this is inside the interpreter. PHP's advisory lists partial reductions if you truly can't patch yet (force memory_limit=-1 via php_admin_value, cap post_max_size), but only upgrading to 8.5.12 / 8.4.27 / 8.3.36 / 8.2.35 closes it.",
         finalResult: "Half-built entry processed as real during teardown → attacker-influenced execution",
         requests: [
           {
@@ -106,7 +107,7 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
         name: "PHP-FPM — stale session state reused across requests",
         detail:
           "PHP-FPM keeps worker processes alive across many requests for performance, and its \"upload progress\" feature can start tracking a session before the rest of PHP has finished initializing for that request. If a request is interrupted at just the right point, PHP frees that request's memory but leaves global pointers still referencing it — and because the worker survives, a second, unrelated request can reach those dangling pointers through the same upload-progress feature and cause PHP to treat freed memory as live data again.",
-        defense: "Same fix: upgrade PHP. Disabling session.upload_progress may reduce exposure to the related issue, but the researchers are clear it isn't a substitute for patching.",
+        defense: "Same fix: upgrade PHP. If you truly can't yet, PHP's own advisory recommends setting session.upload_progress.enabled=0 in php.ini or your FPM pool config (not via ini_set() or .user.ini) and restarting every worker — this blocks the confirmed path, not variants, and isn't a substitute for patching.",
         finalResult: "Second request's cleanup logic treats freed memory from the first as live session data",
         requests: [
           {
@@ -145,9 +146,9 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
     colorTo: "#d97706",
     stats: [
       { value: "70–77%", label: "of public web servers run PHP" },
+      { value: "5", label: "deployment modes affected — FPM, mod_php, php-cgi, FrankenPHP, LiteSpeed" },
       { value: "300+", label: "government sites audited (Pakistan alone)" },
       { value: "NSA · NCSC", label: "national agencies issued advisories" },
-      { value: "2", label: "major platforms took precautionary outages (Wikipedia, Internet Archive)" },
     ],
   },
   {
@@ -156,13 +157,13 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
     title: "Patch Status",
     shortLabel: "The Fix",
     detail:
-      "Fixes landed the same day across every supported branch. PHP 8.1 and earlier — already end-of-life — did not get an official upstream patch, so hosts still running those need to migrate to a supported branch, not just apply a patch. The only real fix is the version itself; here's what that looks like in practice.",
+      "Fixes landed the same day across every supported branch. PHP 8.1 and earlier no longer receive regular updates — but given the severity, the PHP security team also released minimal source-backports for 7.4, 8.0, and 8.1, so even unsupported branches have an option beyond a full migration. PHP 8.2 itself still reaches end-of-life on December 31, 2026 regardless of this patch. The only complete fix is the version itself; here's what that looks like in practice.",
     logLines: [
       "[fix] PHP 8.5.12 — patched",
       "[fix] PHP 8.4.27 — patched",
       "[fix] PHP 8.3.36 — patched",
-      "[fix] PHP 8.2.35 — patched",
-      "[eol] PHP ≤8.1 — no upstream fix; migrate off end-of-life branches",
+      "[fix] PHP 8.2.35 — patched (EOL 2026-12-31)",
+      "[backport] minimal source-backports released for 7.4 / 8.0 / 8.1 given severity",
     ],
     colorFrom: "#4ade80",
     colorTo: "#16a34a",
