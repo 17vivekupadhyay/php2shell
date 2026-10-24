@@ -11,7 +11,7 @@ export function RealWorldAlert() {
         <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-heading font-semibold text-red-200">Real-world, right now: {a.name}</h2>
+            <h2 className="font-heading font-semibold text-red-200">{a.name} — what actually happened</h2>
             <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-mono text-red-300">
               {a.cves.join(" · ")}
             </span>

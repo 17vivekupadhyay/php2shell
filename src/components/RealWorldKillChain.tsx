@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Play, Pause, RotateCcw, Check } from "lucide-react";
+import { Play, Pause, RotateCcw, Check, ChevronDown, ShieldCheck } from "lucide-react";
 import { REAL_WORLD_STAGES } from "@/lib/real-world-kill-chain";
 import { TerminalPanel } from "@/components/TerminalPanel";
 import { ExploitFlowDiagram } from "@/components/ExploitFlowDiagram";
+import { CodeComparison } from "@/components/CodeComparison";
 import { cn } from "@/lib/utils";
 
 const AUTOPLAY_MS = 4200;
@@ -15,6 +16,7 @@ export function RealWorldKillChain() {
   const [playing, setPlaying] = useState(false);
   const [visited, setVisited] = useState<Set<number>>(() => new Set([0]));
   const [runId, setRunId] = useState(0);
+  const [openTechnique, setOpenTechnique] = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const stage = REAL_WORLD_STAGES[activeIndex];
@@ -24,6 +26,7 @@ export function RealWorldKillChain() {
     const clamped = Math.max(0, Math.min(lastIndex, i));
     setActiveIndex(clamped);
     setVisited((prev) => new Set(prev).add(clamped));
+    setOpenTechnique(null);
   }
 
   useEffect(() => {
@@ -145,6 +148,58 @@ export function RealWorldKillChain() {
         >
           <TerminalPanel lines={stage.logLines} live={playing} accentColor={stage.colorFrom} runKey={runId} />
           <p className="mt-3 mb-4 text-sm text-muted-foreground leading-relaxed">{stage.detail}</p>
+
+          {stage.example && (
+            <div className="mb-4">
+              <h4 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wide">What it looks like</h4>
+              <CodeComparison
+                vulnerableCode={stage.example.vulnerable}
+                secureCode={stage.example.secure}
+                language={stage.example.language ?? "dockerfile"}
+              />
+            </div>
+          )}
+
+          {stage.techniques && (
+            <div className="grid gap-2 sm:grid-cols-2 mb-4">
+              {stage.techniques.map((t) => {
+                const open = openTechnique === t.id;
+                return (
+                  <div
+                    key={t.id}
+                    className={cn("rounded-lg border overflow-hidden transition-colors", open ? "border-transparent" : "border-border")}
+                    style={open ? { borderColor: `${stage.colorFrom}80`, boxShadow: `0 0 0 1px ${stage.colorFrom}80` } : undefined}
+                  >
+                    <button
+                      onClick={() => setOpenTechnique(open ? null : t.id)}
+                      className="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-left hover:bg-accent/50 transition-colors"
+                      aria-expanded={open}
+                    >
+                      <span className="text-sm font-medium">{t.name}</span>
+                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground shrink-0 transition-transform", open && "rotate-180")} />
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {open && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="px-3.5 pb-3.5 space-y-2"
+                        >
+                          <p className="text-xs text-muted-foreground leading-relaxed">{t.detail}</p>
+                          <div className="flex items-start gap-1.5 text-xs text-green-400">
+                            <ShieldCheck className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                            <span className="leading-relaxed">{t.defense}</span>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
     </div>
