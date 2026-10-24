@@ -1,33 +1,29 @@
 # PHP → Shell Academy
 
-An interactive, educational web app explaining how PHP code-execution vulnerabilities
-escalate into full shell access — built for defenders, security auditors, and students.
+A single-page, interactive teaching tool: how a PHP code-execution bug becomes full
+shell access, stage by stage — built for defenders, security auditors, and students.
 
-> **For security education and authorized testing only.** The payload simulator never
-> executes anything; it only generates illustrative text and hard-coded example output.
+> **For security education and authorized testing only.**
 
-## Features
+## What it is
 
-- **Attack Chain Visualizer** — an animated, interactive 5-stage flowchart from injection
-  to persistence.
-- **Vulnerability Database** — 21 real-world PHP vulnerability patterns (CWE-tagged) with
-  searchable/filterable vulnerable-vs-secure code comparisons, explanations, and mitigations.
-- **Code Comparison** — syntax-highlighted split-pane view with line numbers and copy buttons.
-- **Payload Simulator** — pick an injection point + target function + shell to see a fully
-  simulated (never executed) example payload and output.
-- **Defense Checklist** — 34 hardening steps across php.ini, input validation, uploads, web
-  server config, security headers, and least-privilege setup, with progress saved locally
-  and exportable as Markdown.
-- **Resources** — curated links to OWASP, CWE, and further reading.
+One page, one tool — no tabs to dig through:
+
+- **Run the attack** to autoplay through the 5-stage kill chain (injection → function
+  detection → shell execution → privilege escalation → persistence), or click any
+  stage to jump straight there.
+- Each stage shows **what went wrong**, **a real vulnerable-vs-secure PHP code
+  example**, and the specific **techniques attackers use** — tap one to see how to
+  defend against it.
+- Keyboard: arrow keys to move between stages, space to play/pause.
 
 ## Tech stack
 
 - [Next.js 16](https://nextjs.org/) (App Router, Turbopack)
 - React 19 + TypeScript (strict mode)
 - Tailwind CSS v4 + [shadcn/ui](https://ui.shadcn.com/) (Base UI primitives)
-- Framer Motion for animation
-- Zustand (with persisted checklist state)
-- react-syntax-highlighter (Prism)
+- Framer Motion for the kill-chain animation
+- react-syntax-highlighter (Prism) for the code comparisons
 
 ## Getting started
 
@@ -42,14 +38,14 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ```
 src/
-├── app/                  # Routes: /, /vulnerabilities, /simulator, /defense, /resources
-├── components/           # UI components (AttackChainVisualizer, VulnerabilityCard, …)
-│   ├── icons/             # Inline brand icons (GitHub/LinkedIn)
-│   └── ui/                 # shadcn/ui primitives
-├── hooks/                # useVulnerabilities, usePayload, useTheme
-├── lib/                  # Static data: vulnerabilities, payloads, attack-chain, checklist
-├── store/                # Zustand store
-└── types/                # Shared TypeScript types
+├── app/                  # Single route: /
+├── components/
+│   ├── KillChain.tsx      # The interactive tool
+│   ├── CodeComparison.tsx # Vulnerable/secure split view
+│   └── ui/                # shadcn/ui primitives (button, tooltip)
+├── hooks/useTheme.ts
+├── lib/attack-chain.ts   # All stage/technique/code-example content
+└── types/index.ts
 ```
 
 ## License

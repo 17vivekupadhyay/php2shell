@@ -1,19 +1,8 @@
-export * from "./vulnerability";
-export * from "./payload";
-
-export interface ChecklistItem {
+export interface AttackTechnique {
   id: string;
-  label: string;
-  description: string;
-  priority: "critical" | "high" | "medium" | "low";
-  category: string;
-}
-
-export interface ChecklistSection {
-  id: string;
-  title: string;
-  description: string;
-  items: ChecklistItem[];
+  name: string;
+  detail: string;
+  defense: string;
 }
 
 export interface AttackStage {
@@ -22,8 +11,15 @@ export interface AttackStage {
   title: string;
   shortLabel: string;
   description: string;
-  techniques: string[];
+  techniques: AttackTechnique[];
   detail: string;
+  defenderNote: string;
   colorFrom: string;
   colorTo: string;
+  /** A short, real vulnerable-vs-secure code example for this stage, when one applies. */
+  example?: {
+    vulnerable: string;
+    secure: string;
+    language?: string;
+  };
 }
