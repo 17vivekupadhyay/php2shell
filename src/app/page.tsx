@@ -1,5 +1,6 @@
 import { ShieldAlert } from "lucide-react";
 import { KillChain } from "@/components/KillChain";
+import { RealWorldAlert } from "@/components/RealWorldAlert";
 
 export default function HomePage() {
   return (
@@ -16,6 +17,10 @@ export default function HomePage() {
           straight to the stage you care about — each one has a real code example and
           the fix.
         </p>
+      </div>
+
+      <div className="mb-10">
+        <RealWorldAlert />
       </div>
 
       <KillChain />
