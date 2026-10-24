@@ -32,11 +32,12 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
     title: "Emergency Disclosure",
     shortLabel: "Disclosure",
     detail:
-      "On October 21, 2026, the PHP project shipped out-of-band patches for two critical core vulnerabilities after reports that exploitation was already happening in the wild. Security teams worldwide moved into emergency-patch mode within hours.",
+      "Both bugs were found by security firm Calif, working with OpenAI and Wiz as part of OpenAI's \"Patch the Planet\" initiative — an AI-assisted audit effort the PHP Foundation (via Volker Dusch) opted into. On October 21, 2026, PHP shipped out-of-band patches for both, coordinated with disclosure. Exploitation in the wild began within hours regardless.",
     logLines: [
+      "[2026-07-30 UTC] Calif + OpenAI + Wiz begin coordinated PHP audit w/ PHP Foundation",
+      "[2026-08-01 UTC] first exploitable OOM-fatal surfaced within days of starting",
       "[2026-10-21 09:14 UTC] php.net: emergency release — 8.5.12 / 8.4.27 / 8.3.36 / 8.2.35",
       "[2026-10-21 11:02 UTC] first public reports of active exploitation attempts",
-      "[2026-10-21 14:30 UTC] Cloudflare: inbound probe traffic spikes across edge network",
       "[2026-10-22 02:00 UTC] NSA / UK NCSC issue joint advisory",
     ],
     colorFrom: "#f87171",
@@ -48,28 +49,29 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
     title: "Two Unauthenticated RCEs",
     shortLabel: "The Flaw",
     detail:
-      "Two distinct bugs, patched together because both sit inside core PHP itself rather than application code — meaning no framework, CMS, or app-level fix can close either one. Tap each CVE below for what's actually known about it.",
+      "The root cause is one general pattern, exploited two different ways. Deep in PHP's internals, some operations mark a piece of memory as \"ready to use\" before they've actually finished setting it up. If an out-of-memory error interrupts that exact window, PHP's own cleanup code — which runs even during a fatal — ends up trusting and acting on a half-built, not-fully-initialized piece of state. That's the whole bug, expressed two ways against two different PHP deployment modes. Tap each one below.",
     logLines: [
-      "[analysis] CVE-2026-109618 — OOM-path memory corruption → RCE (CVSS 9.2)",
-      "[analysis] CVE-2026-109619 — stale global-state reuse → RCE (CVSS 9.2)",
-      "[note] exploit trigger details withheld — both under active exploitation at disclosure",
+      "[analysis] root cause — a value is marked 'ready' before it's fully initialized",
+      "[analysis] an out-of-memory fatal at that exact moment skips the rest of setup",
+      "[analysis] PHP's own cleanup code still trusts and acts on the half-built value",
+      "[note] exploitation specifics withheld — see cited research for the full technical writeup",
     ],
     colorFrom: "#fb923c",
     colorTo: "#ea580c",
     techniques: [
       {
-        id: "cve-109618",
-        name: "CVE-2026-109618 — OOM-path memory corruption",
+        id: "modphp-path",
+        name: "Apache / mod_php — dangling request-variable entry",
         detail:
-          "When core PHP's memory allocator hits an out-of-memory condition along a specific internal code path, the cleanup/error-handling logic itself corrupts memory rather than failing safely. That corruption can be steered to redirect program execution — unauthenticated, over the network, no application code involved.",
-        defense: "No app-level mitigation exists. Upgrade to 8.5.12 / 8.4.27 / 8.3.36 / 8.2.35 — this is a core interpreter fix, not a config change.",
+          "A specially crafted file-upload request can push PHP's memory usage past its configured limit while the request body itself stays small, by exploiting how PHP expands deeply nested form-field names into many internal lookup-table entries. If that memory limit is hit at exactly the moment PHP is registering one of those entries, the entry is left half-built — but PHP's internal bookkeeping already counted it as valid. When the request ends, PHP's normal teardown logic processes that half-built entry as if it were real, which an attacker can turn into code execution.",
+        defense: "No app-level mitigation exists — this is inside the interpreter. Upgrade to 8.5.12 / 8.4.27 / 8.3.36 / 8.2.35.",
       },
       {
-        id: "cve-109619",
-        name: "CVE-2026-109619 — stale global-state reuse",
+        id: "fpm-path",
+        name: "PHP-FPM — stale session state reused across requests",
         detail:
-          "PHP-FPM keeps long-lived worker processes alive across many requests for performance. This bug lets state left behind by one request — in global/static memory — be reached and manipulated by a completely unrelated later request on the same worker.",
-        defense: "Same fix as above: upgrade PHP. Restarting workers between requests is not a realistic mitigation at scale and isn't officially endorsed as one.",
+          "PHP-FPM keeps worker processes alive across many requests for performance, and its \"upload progress\" feature can start tracking a session before the rest of PHP has finished initializing for that request. If a request is interrupted at just the right point, PHP frees that request's memory but leaves global pointers still referencing it — and because the worker survives, a second, unrelated request can reach those dangling pointers through the same upload-progress feature and cause PHP to treat freed memory as live data again.",
+        defense: "Same fix: upgrade PHP. Disabling session.upload_progress may reduce exposure to the related issue, but the researchers are clear it isn't a substitute for patching.",
       },
     ],
   },
