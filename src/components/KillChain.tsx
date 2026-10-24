@@ -11,18 +11,27 @@ import {
   ChevronRight,
   Check,
   ShieldCheck,
+  Link2,
+  Newspaper,
+  ExternalLink,
 } from "lucide-react";
 import { ATTACK_STAGES } from "@/lib/attack-chain";
 import { CodeComparison } from "@/components/CodeComparison";
+import { TerminalPanel } from "@/components/TerminalPanel";
 import { cn } from "@/lib/utils";
 
 const AUTOPLAY_MS = 4200;
 
 export function KillChain() {
+  // Always starts at stage 1 on both server and client renders, so hydration
+  // matches; a deep-linked ?stage=N is restored after mount, below.
   const [activeIndex, setActiveIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [visited, setVisited] = useState<Set<number>>(new Set([0]));
+  const [visited, setVisited] = useState<Set<number>>(() => new Set([0]));
   const [openTechnique, setOpenTechnique] = useState<string | null>(null);
+  const [justLanded, setJustLanded] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [runId, setRunId] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const stage = ATTACK_STAGES[activeIndex];
@@ -33,6 +42,38 @@ export function KillChain() {
     setActiveIndex(clamped);
     setVisited((prev) => new Set(prev).add(clamped));
     setOpenTechnique(null);
+  }
+
+  // Restore a deep-linked stage once mounted (post-hydration), then keep the
+  // URL in sync as the active stage changes, so the page is shareable mid-chain.
+  useEffect(() => {
+    const n = Number(new URLSearchParams(window.location.search).get("stage"));
+    if (n >= 1 && n <= ATTACK_STAGES.length && n - 1 !== 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time restore from the URL after hydration, not a derived-state sync
+      goTo(n - 1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("stage", String(activeIndex + 1));
+    window.history.replaceState(null, "", url);
+  }, [activeIndex]);
+
+  function togglePlay() {
+    setPlaying((p) => {
+      const next = !p;
+      if (next) setRunId((r) => r + 1);
+      return next;
+    });
+  }
+
+  function copyShareLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 1500);
+    });
   }
 
   // Autoplay
@@ -46,6 +87,8 @@ export function KillChain() {
           return prev;
         }
         setVisited((v) => new Set(v).add(next));
+        setJustLanded(true);
+        setTimeout(() => setJustLanded(false), 700);
         return next;
       });
       setOpenTechnique(null);
@@ -66,7 +109,7 @@ export function KillChain() {
         goTo(activeIndex - 1);
       } else if (e.key === " ") {
         e.preventDefault();
-        setPlaying((p) => !p);
+        togglePlay();
       }
     }
     window.addEventListener("keydown", handleKey);
@@ -90,7 +133,7 @@ export function KillChain() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setPlaying((p) => !p)}
+            onClick={togglePlay}
             className="inline-flex items-center gap-1.5 rounded-full bg-php hover:bg-php-light text-white text-sm font-medium px-4 py-2 transition-colors"
             aria-label={playing ? "Pause autoplay" : "Play attack chain"}
           >
@@ -103,6 +146,14 @@ export function KillChain() {
             aria-label="Restart"
           >
             <RotateCcw className="h-3.5 w-3.5" /> Restart
+          </button>
+          <button
+            onClick={copyShareLink}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border hover:bg-accent text-sm px-3 py-2 transition-colors"
+            aria-label="Copy link to this stage"
+          >
+            {shareCopied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Link2 className="h-3.5 w-3.5" />}
+            <span className="hidden sm:inline">{shareCopied ? "Copied!" : "Share"}</span>
           </button>
         </div>
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -183,6 +234,15 @@ export function KillChain() {
                       transition={{ duration: 1.6, repeat: Infinity }}
                     />
                   )}
+                  {isActive && justLanded && (
+                    <motion.span
+                      className="absolute inset-0 rounded-full border-2"
+                      style={{ borderColor: s.colorFrom }}
+                      initial={{ scale: 1, opacity: 0.8 }}
+                      animate={{ scale: 2.4, opacity: 0 }}
+                      transition={{ duration: 0.7, ease: "easeOut" }}
+                    />
+                  )}
                 </span>
                 <span
                   className={cn(
@@ -254,6 +314,28 @@ export function KillChain() {
         })}
       </div>
 
+      {/* Live terminal */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`terminal-${stage.id}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="mb-3"
+        >
+          <TerminalPanel
+            lines={stage.terminalLines}
+            live={playing || justLanded}
+            accentColor={stage.colorFrom}
+            runKey={runId}
+          />
+        </motion.div>
+      </AnimatePresence>
+      <p className="mb-8 text-center text-xs text-muted-foreground">
+        Simulated terminal output — illustrative only, nothing here is executed.
+      </p>
+
       {/* Detail panel */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -280,6 +362,31 @@ export function KillChain() {
               <ShieldCheck className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
               <p className="text-sm text-green-200/90 leading-relaxed">{stage.defenderNote}</p>
             </div>
+
+            {stage.reference && (
+              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
+                <span className="font-mono font-semibold" style={{ color: stage.colorFrom }}>
+                  {stage.reference.label}
+                </span>
+                <span className="text-muted-foreground max-w-md">{stage.reference.summary}</span>
+                <a
+                  href={stage.reference.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ExternalLink className="h-3 w-3" /> Source
+                </a>
+                <a
+                  href={`https://news.google.com/search?q=${encodeURIComponent(stage.reference.label)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Newspaper className="h-3 w-3" /> News coverage
+                </a>
+              </div>
+            )}
           </div>
 
           {stage.example && (
