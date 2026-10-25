@@ -1,25 +1,70 @@
 import { ShieldAlert } from "lucide-react";
-import { RealWorldAlert } from "@/components/RealWorldAlert";
+import { Hero } from "@/components/Hero";
+import { AtAGlanceStrip } from "@/components/AtAGlanceStrip";
+import { ArchitectureDiagram } from "@/components/ArchitectureDiagram";
+import { RealWorldKillChain } from "@/components/RealWorldKillChain";
+import { MemoryStateDiagram } from "@/components/MemoryStateDiagram";
+import { PatchResponseSection } from "@/components/PatchResponseSection";
+import { PatchChecklist } from "@/components/PatchChecklist";
+import { UnderstandingCheck } from "@/components/UnderstandingCheck";
+import { SourcesSection } from "@/components/SourcesSection";
+import { Section } from "@/components/Section";
+import { REAL_WORLD_ALERT } from "@/lib/real-world-alert";
 
 export default function HomePage() {
-  return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
-      <div className="text-center mb-10">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/40 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400">
-          <ShieldAlert className="h-3.5 w-3.5" /> Live incident · October 2026
-        </span>
-        <h1 className="mt-4 text-3xl sm:text-4xl font-bold tracking-tight">
-          PHP <span className="text-red-500">→</span> Shell
-        </h1>
-        <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-          An interactive walkthrough of PHP2Shell — the real, critical PHP vulnerability
-          (CVE-2026-109618 / CVE-2026-109619) behind this month&apos;s &quot;Black October&quot;
-          incident. Play the timeline, break down each CVE, and see exactly what patching
-          it actually takes.
-        </p>
-      </div>
+  const a = REAL_WORLD_ALERT;
 
-      <RealWorldAlert />
+  return (
+    <div>
+      <Hero />
+      <AtAGlanceStrip />
+
+      <Section
+        eyebrow="Architecture"
+        title="Two affected paths"
+        description={a.atRisk}
+      >
+        <div className="rounded-xl border border-border bg-card/50 p-5">
+          <ArchitectureDiagram />
+        </div>
+      </Section>
+
+      <Section
+        eyebrow="Incident timeline"
+        title="What actually happened"
+        description={a.summary}
+      >
+        <div className="rounded-xl border border-border bg-card/50 p-4 sm:p-5">
+          <RealWorldKillChain />
+        </div>
+        <p className="mt-3 flex items-start gap-1.5 text-xs text-muted-foreground">
+          <ShieldAlert className="h-3.5 w-3.5 shrink-0 mt-0.5 text-vulnerable" />
+          This timeline covers public events and the conceptual mechanism only — no exploit trigger or payload
+          details are included, since both CVEs were under active exploitation at the time this was written.
+        </p>
+      </Section>
+
+      <Section eyebrow="Root cause" title="How the state becomes unsafe">
+        <div className="rounded-xl border border-border bg-card/50 p-5">
+          <MemoryStateDiagram active runKey="root-cause" />
+        </div>
+      </Section>
+
+      <Section eyebrow="Response" title="What should I do?">
+        <PatchResponseSection />
+      </Section>
+
+      <Section eyebrow="Verification" title="Am I actually patched?">
+        <PatchChecklist />
+      </Section>
+
+      <Section eyebrow="Knowledge check" title="Check your understanding">
+        <UnderstandingCheck />
+      </Section>
+
+      <Section eyebrow="References" title="Sources & further reading">
+        <SourcesSection />
+      </Section>
     </div>
   );
 }

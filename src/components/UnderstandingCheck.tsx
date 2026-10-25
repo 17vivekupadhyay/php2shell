@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, XCircle, HelpCircle } from "lucide-react";
+import { CheckCircle2, XCircle, HelpCircle, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Question {
@@ -67,15 +67,16 @@ export function UnderstandingCheck() {
 
   const answeredCount = Object.keys(revealed).length;
   const correctCount = QUESTIONS.filter((q) => answers[q.id] === q.correctIndex).length;
+  const allAnswered = answeredCount === QUESTIONS.length;
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="flex items-center gap-1.5 text-sm font-semibold">
-          <HelpCircle className="h-4 w-4 text-muted-foreground" /> Check your understanding
+        <h3 className="label-console flex items-center gap-1.5">
+          <HelpCircle className="h-3.5 w-3.5" /> Three questions
         </h3>
-        {answeredCount > 0 && (
-          <span className="text-xs text-muted-foreground">
+        {answeredCount > 0 && !allAnswered && (
+          <span className="label-console">
             {correctCount}/{answeredCount} correct
           </span>
         )}
@@ -101,13 +102,13 @@ export function UnderstandingCheck() {
                     className={cn(
                       "flex w-full items-center gap-2 rounded-md border px-3 py-2 text-left text-xs transition-colors",
                       !isRevealed && "border-border hover:bg-accent/50",
-                      isRevealed && isCorrect && "border-green-500/50 bg-green-500/10 text-green-300",
-                      isRevealed && isSelected && !isCorrect && "border-red-500/50 bg-red-500/10 text-red-300",
+                      isRevealed && isCorrect && "border-safe/50 bg-safe/10 text-safe",
+                      isRevealed && isSelected && !isCorrect && "border-critical/50 bg-critical/10 text-critical",
                       isRevealed && !isCorrect && !isSelected && "border-border opacity-50"
                     )}
                   >
-                    {isRevealed && isCorrect && <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-400" />}
-                    {isRevealed && isSelected && !isCorrect && <XCircle className="h-3.5 w-3.5 shrink-0 text-red-400" />}
+                    {isRevealed && isCorrect && <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-safe" />}
+                    {isRevealed && isSelected && !isCorrect && <XCircle className="h-3.5 w-3.5 shrink-0 text-critical" />}
                     <span>{opt}</span>
                   </button>
                 );
@@ -128,6 +129,27 @@ export function UnderstandingCheck() {
           </div>
         );
       })}
+
+      <AnimatePresence>
+        {allAnswered && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className={cn(
+              "flex items-center gap-2 rounded-lg border p-3 text-sm",
+              correctCount === QUESTIONS.length
+                ? "border-safe/40 bg-safe/10 text-safe"
+                : "border-vulnerable/40 bg-vulnerable/10 text-vulnerable"
+            )}
+          >
+            <Trophy className="h-4 w-4 shrink-0" />
+            {correctCount === QUESTIONS.length
+              ? `${correctCount}/${QUESTIONS.length} — you've got the mechanism down.`
+              : `${correctCount}/${QUESTIONS.length} — review the explanations above for the ones you missed.`}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

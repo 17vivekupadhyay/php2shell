@@ -26,7 +26,7 @@ export function CopyButton({ text, className }: { text: string; className?: stri
       onClick={handleCopy}
       aria-label="Copy to clipboard"
     >
-      {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? <Check className="h-3.5 w-3.5 text-safe" /> : <Copy className="h-3.5 w-3.5" />}
     </Button>
   );
 }

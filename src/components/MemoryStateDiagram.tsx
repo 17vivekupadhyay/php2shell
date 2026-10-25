@@ -1,67 +1,94 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { CircleCheck, Zap, AlertOctagon, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const STEP_MS = 1300;
+
 const STEPS = [
-  { icon: CircleCheck, label: "Allocated, marked ready", caption: "PHP marks it usable before setup finishes" },
-  { icon: Zap, label: "OOM interrupts initialization", caption: "A fatal hits exactly mid-setup", danger: true },
-  { icon: AlertOctagon, label: "Unsafe state", caption: "Cleanup trusts the half-built value anyway" },
+  { label: "Memory allocated", detail: "A piece of request state is set aside", color: "var(--color-muted-foreground)" },
+  { label: "Marked “ready” too early", detail: "Counted as usable before setup finishes", color: "var(--color-php)" },
+  { label: "OOM interrupts initialization", detail: "A fatal hits in that exact window", color: "var(--color-critical)" },
+  { label: "Cleanup trusts the unsafe state", detail: "The half-built value is used as real", color: "var(--color-vulnerable)" },
 ];
 
-/**
- * A small abstract visualization of the shared root-cause pattern behind
- * both CVEs — purely conceptual (generic allocate/interrupt/unsafe-state
- * steps), not a reproduction of the actual exploit or source code.
- */
-export function MemoryStateDiagram({
-  active,
-  accentColor,
-  runKey,
-}: {
-  active: boolean;
-  accentColor: string;
-  runKey: string | number;
-}) {
+function MemoryStateDiagramInner({ active }: { active: boolean }) {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (!active) return;
+    const id = setInterval(() => {
+      setStep((s) => (s + 1) % STEPS.length);
+    }, STEP_MS);
+    return () => clearInterval(id);
+  }, [active]);
+
+  const current = STEPS[step];
+  const pct = (step / (STEPS.length - 1)) * 100;
+
   return (
-    <div className="flex flex-col items-stretch gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
-      {STEPS.map((step, i) => (
-        <div key={`${step.label}-${runKey}`} className="flex items-center gap-2 sm:flex-1">
-          <div className="flex flex-1 items-center gap-3 rounded-lg border border-border bg-card/50 px-3 py-2.5">
-            <motion.div
-              className={cn(
-                "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2",
-                step.danger ? "border-red-500/70" : "border-border"
+    <div className="py-2">
+      {/* rail with the morphing token */}
+      <div className="relative mb-6 h-2">
+        <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-border" />
+        <motion.div
+          className="absolute top-1/2 h-0.5 -translate-y-1/2 rounded-full"
+          style={{ backgroundColor: current.color }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
+        />
+        {STEPS.map((s, i) => (
+          <div
+            key={s.label}
+            className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 bg-background transition-colors duration-300"
+            style={{ left: `${(i / (STEPS.length - 1)) * 100}%`, borderColor: i <= step ? current.color : "var(--color-border)" }}
+          />
+        ))}
+        <motion.div
+          className="absolute top-1/2 flex h-5 w-5 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 shadow-lg"
+          style={{ borderColor: current.color, backgroundColor: current.color }}
+          animate={{ left: `${pct}%` }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
+        />
+      </div>
+
+      {/* step labels */}
+      <div className="grid grid-cols-4 gap-1.5">
+        {STEPS.map((s, i) => {
+          const isCurrent = i === step;
+          const isPast = i < step;
+          return (
+            <div key={s.label} className={cn("text-center transition-opacity", !isCurrent && !isPast && "opacity-40")}>
+              <div
+                className="text-[10px] font-semibold leading-tight"
+                style={isCurrent ? { color: s.color } : undefined}
+              >
+                {s.label}
+              </div>
+              {isCurrent && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-0.5 text-[9px] leading-tight text-muted-foreground"
+                >
+                  {s.detail}
+                </motion.div>
               )}
-              style={!step.danger && active ? { borderColor: accentColor } : undefined}
-              animate={
-                active
-                  ? { scale: [1, step.danger ? 1.25 : 1.08, 1], opacity: [0.6, 1, 0.6] }
-                  : { scale: 1, opacity: 1 }
-              }
-              transition={{
-                duration: 0.5,
-                delay: i * 0.55,
-                repeat: active ? Infinity : 0,
-                repeatDelay: STEPS.length * 0.55,
-              }}
-            >
-              <step.icon className={cn("h-4 w-4", step.danger ? "text-red-400" : "text-muted-foreground")} />
-            </motion.div>
-            <div className="min-w-0">
-              <div className={cn("text-xs font-semibold leading-tight", step.danger && "text-red-300")}>{step.label}</div>
-              <div className="mt-0.5 text-[11px] leading-tight text-muted-foreground">{step.caption}</div>
             </div>
-          </div>
-          {i < STEPS.length - 1 && (
-            <ArrowRight
-              className="h-4 w-4 shrink-0 self-center text-muted-foreground sm:rotate-0 rotate-90"
-              style={active ? { color: accentColor } : undefined}
-            />
-          )}
-        </div>
-      ))}
+          );
+        })}
+      </div>
     </div>
   );
+}
+
+/**
+ * A single state token morphing through the shared root-cause pattern behind
+ * both CVEs — a genuine state transition, not four static icons. Purely
+ * conceptual, not a reproduction of the actual exploit or source code.
+ * `runKey` remounts the inner component so each replay starts clean.
+ */
+export function MemoryStateDiagram({ active, runKey }: { active: boolean; runKey: string | number }) {
+  return <MemoryStateDiagramInner key={runKey} active={active} />;
 }

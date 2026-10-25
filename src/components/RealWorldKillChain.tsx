@@ -6,10 +6,7 @@ import { Play, Pause, RotateCcw, Check, ChevronDown, ShieldCheck } from "lucide-
 import { REAL_WORLD_STAGES } from "@/lib/real-world-kill-chain";
 import { TerminalPanel } from "@/components/TerminalPanel";
 import { ExploitFlowDiagram } from "@/components/ExploitFlowDiagram";
-import { MemoryStateDiagram } from "@/components/MemoryStateDiagram";
-import { DeploymentModelDiagram } from "@/components/DeploymentModelDiagram";
 import { RequestExploitAnimation } from "@/components/RequestExploitAnimation";
-import { PatchChecklist } from "@/components/PatchChecklist";
 import { CodeComparison } from "@/components/CodeComparison";
 import { cn } from "@/lib/utils";
 
@@ -73,7 +70,7 @@ export function RealWorldKillChain() {
         <div className="flex items-center gap-2">
           <button
             onClick={togglePlay}
-            className="inline-flex items-center gap-1.5 rounded-full bg-red-600 hover:bg-red-500 text-white text-sm font-medium px-4 py-2 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full bg-php hover:bg-php-light text-white text-sm font-medium px-4 py-2 transition-colors"
             aria-label={playing ? "Pause timeline" : "Play incident timeline"}
           >
             {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
@@ -87,7 +84,7 @@ export function RealWorldKillChain() {
             <RotateCcw className="h-3.5 w-3.5" /> Restart
           </button>
         </div>
-        <span className="text-sm text-muted-foreground font-mono">
+        <span className="label-console">
           {activeIndex + 1} / {REAL_WORLD_STAGES.length}
         </span>
       </div>
@@ -95,7 +92,7 @@ export function RealWorldKillChain() {
       <div className="relative mb-8">
         <div className="absolute left-0 right-0 top-5 h-0.5 bg-border" />
         <motion.div
-          className="absolute left-0 top-5 h-0.5 bg-gradient-to-r from-red-400 via-orange-400 to-green-500"
+          className="absolute left-0 top-5 h-0.5 bg-gradient-to-r from-critical via-vulnerable to-safe"
           animate={{ width: `${progressPct}%` }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
         />
@@ -153,30 +150,11 @@ export function RealWorldKillChain() {
           <TerminalPanel lines={stage.logLines} live={playing} accentColor={stage.colorFrom} runKey={runId} />
           <p className="mt-3 mb-4 text-sm text-muted-foreground leading-relaxed">{stage.detail}</p>
 
-          {stage.id === "the-flaw" && (
-            <>
-              <div className="mb-4 rounded-lg border border-border bg-card/50 p-3">
-                <h4 className="text-xs font-semibold mb-1 text-muted-foreground uppercase tracking-wide">
-                  The shared pattern, abstracted
-                </h4>
-                <MemoryStateDiagram active={playing} accentColor={stage.colorFrom} runKey={runId} />
-              </div>
-              <div className="mb-4">
-                <h4 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wide">
-                  Why the same bug hits two deployment models differently
-                </h4>
-                <DeploymentModelDiagram />
-              </div>
-            </>
-          )}
-
           {stage.stats && (
             <div className="grid grid-cols-2 gap-2 mb-4 sm:grid-cols-4">
               {stage.stats.map((s) => (
                 <div key={s.label} className="rounded-lg border border-border bg-card/50 p-3 text-center">
-                  <div className="font-heading text-lg font-bold" style={{ color: stage.colorFrom }}>
-                    {s.value}
-                  </div>
+                  <div className="font-heading text-lg font-bold text-vulnerable">{s.value}</div>
                   <div className="mt-0.5 text-[11px] leading-tight text-muted-foreground">{s.label}</div>
                 </div>
               ))}
@@ -185,18 +163,12 @@ export function RealWorldKillChain() {
 
           {stage.example && (
             <div className="mb-4">
-              <h4 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wide">What it looks like</h4>
+              <h4 className="label-console mb-2">What it looks like</h4>
               <CodeComparison
                 vulnerableCode={stage.example.vulnerable}
                 secureCode={stage.example.secure}
                 language={stage.example.language ?? "dockerfile"}
               />
-            </div>
-          )}
-
-          {stage.id === "the-fix" && (
-            <div className="mb-4">
-              <PatchChecklist />
             </div>
           )}
 
@@ -235,7 +207,7 @@ export function RealWorldKillChain() {
                               accentColor={stage.colorFrom}
                             />
                           )}
-                          <div className="flex items-start gap-1.5 text-xs text-green-400">
+                          <div className="flex items-start gap-1.5 text-xs text-safe">
                             <ShieldCheck className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                             <span className="leading-relaxed">{t.defense}</span>
                           </div>

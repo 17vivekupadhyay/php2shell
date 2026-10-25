@@ -5,11 +5,20 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* PHP's own brand purple (the elephant-logo colorway), used for all
-     primary/brand accents across the site. */
-  --color-php: #8993be;
-  --color-php-light: #a5aed6;
-  --color-php-dark: #4f5b93;
+  /* PHP's own brand purple (the elephant-logo colorway) — theme-aware so it
+     stays legible as body/icon text in both light and dark mode. */
+  --color-php: var(--php);
+  --color-php-light: var(--php-light);
+  --color-php-dark: var(--php-dark);
+
+  /* Status semantics, used consistently across the whole site:
+     critical = active risk, vulnerable = failure/unsafe path,
+     safe = patched/verified, source = official reference material. */
+  --color-critical: var(--status-critical);
+  --color-vulnerable: var(--status-vulnerable);
+  --color-safe: var(--status-safe);
+  --color-source: var(--status-source);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -86,21 +95,32 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Light mode: darker shades of each hue for AA contrast on a white page. */
+  --php: #4f5b93;
+  --php-light: #6c76a8;
+  --php-dark: #363f6e;
+  --status-critical: #b91c1c;
+  --status-vulnerable: #c2410c;
+  --status-safe: #15803d;
+  --status-source: #1d4ed8;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
+  /* A deliberately-tinted charcoal/ink, not neutral gray — a hair of the
+     brand purple's hue carried into the background itself. */
+  --background: oklch(0.145 0.004 290);
+  --foreground: oklch(0.965 0.002 290);
+  --card: oklch(0.195 0.006 290);
+  --card-foreground: oklch(0.965 0.002 290);
+  --popover: oklch(0.195 0.006 290);
+  --popover-foreground: oklch(0.965 0.002 290);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
+  --muted: oklch(0.24 0.006 290);
+  --muted-foreground: oklch(0.708 0.006 290);
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
@@ -120,6 +140,15 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Dark mode: brighter shades of each hue for contrast on near-black. */
+  --php: #a5aed6;
+  --php-light: #c2c9e8;
+  --php-dark: #6c76a8;
+  --status-critical: #f87171;
+  --status-vulnerable: #fb923c;
+  --status-safe: #4ade80;
+  --status-source: #60a5fa;
 }
 
 @layer base {
@@ -129,6 +158,11 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "cv11", "ss01";
+    background-image:
+      linear-gradient(to bottom, color-mix(in oklch, var(--php) 5%, transparent), transparent 420px),
+      repeating-linear-gradient(0deg, color-mix(in oklch, var(--foreground) 3%, transparent) 0px, transparent 1px, transparent 3px),
+      repeating-linear-gradient(90deg, color-mix(in oklch, var(--foreground) 3%, transparent) 0px, transparent 1px, transparent 3px);
+    background-attachment: fixed;
   }
   html {
     @apply font-sans;
@@ -143,5 +177,24 @@
   }
   p {
     @apply leading-relaxed;
+  }
+}
+
+@layer utilities {
+  /* A terse, uppercase monospace label — used sparingly for an
+     incident-console feel (section eyebrows, metadata tags). */
+  .label-console {
+    @apply font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
