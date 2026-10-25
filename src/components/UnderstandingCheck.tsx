@@ -86,7 +86,7 @@ export function UnderstandingCheck() {
         const selected = answers[q.id];
         const isRevealed = revealed[q.id];
         return (
-          <div key={q.id} className="rounded-lg border border-border bg-card/50 p-3.5">
+          <div key={q.id} className="border border-border p-3.5">
             <p className="mb-2.5 text-sm font-medium">
               {qi + 1}. {q.prompt}
             </p>

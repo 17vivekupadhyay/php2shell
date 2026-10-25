@@ -10,45 +10,38 @@ const PULSE_MS = 1400;
 function Node({
   icon: Icon,
   label,
-  sublabel,
-  tone,
   compact,
+  danger,
 }: {
   icon: typeof Globe;
   label: string;
-  sublabel?: string;
-  tone?: "neutral" | "vulnerable" | "critical";
   compact?: boolean;
+  danger?: boolean;
 }) {
   return (
     <div className="flex flex-col items-center gap-1 shrink-0" style={{ width: compact ? 72 : 92 }}>
       <div
         className={cn(
-          "flex items-center justify-center rounded-lg border-2",
+          "flex items-center justify-center rounded-md border",
           compact ? "h-9 w-9" : "h-11 w-11",
-          tone === "critical" && "border-critical/70 text-critical bg-critical/10",
-          tone === "vulnerable" && "border-vulnerable/70 text-vulnerable bg-vulnerable/10",
-          (!tone || tone === "neutral") && "border-border text-muted-foreground bg-card"
+          danger ? "border-critical text-critical" : "border-border text-muted-foreground"
         )}
       >
         <Icon className={compact ? "h-4 w-4" : "h-5 w-5"} />
       </div>
-      <span className={cn("text-center font-medium leading-tight", compact ? "text-[9px]" : "text-[10px]")}>{label}</span>
-      {sublabel && !compact && <span className="text-center text-[9px] leading-tight text-muted-foreground">{sublabel}</span>}
+      <span className={cn("text-center leading-tight", compact ? "text-[9px]" : "text-[10px]")}>{label}</span>
     </div>
   );
 }
 
-function Connector({ active, tone = "neutral" as const }: { active: boolean; tone?: "neutral" | "vulnerable" | "critical" }) {
-  const color = tone === "critical" ? "var(--color-critical)" : tone === "vulnerable" ? "var(--color-vulnerable)" : "var(--color-php)";
+function Connector({ active }: { active: boolean }) {
   return (
-    <div className="relative h-0.5 flex-1 min-w-[16px] bg-border overflow-visible">
+    <div className="relative h-px flex-1 min-w-[16px] bg-border overflow-visible">
       <AnimatePresence>
         {active && (
           <motion.div
             key="pulse"
-            className="absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full"
-            style={{ backgroundColor: color, boxShadow: `0 0 6px 1px ${color}` }}
+            className="absolute top-1/2 h-1 w-1 -translate-y-1/2 rounded-full bg-php"
             initial={{ left: "0%", opacity: 0 }}
             animate={{ left: "100%", opacity: [0, 1, 1, 0] }}
             transition={{ duration: PULSE_MS / 1000, ease: "linear" }}
@@ -74,33 +67,25 @@ export function ArchitectureDiagram({ compact = false }: { compact?: boolean }) 
   return (
     <div className={cn("space-y-4", compact && "space-y-3")}>
       <div>
-        {!compact && (
-          <div className="mb-2 flex items-center gap-1.5 label-console">
-            <span className="h-1.5 w-1.5 rounded-full bg-critical" /> Apache + mod_php — highest risk
-          </div>
-        )}
+        {!compact && <p className="mb-2 text-xs font-semibold text-muted-foreground">Apache + mod_php — highest risk</p>}
         <div className="flex items-center overflow-x-auto pb-1" key={`row1-${tick}`}>
           <Node icon={Globe} label="Web request" compact={compact} />
-          <Connector active tone="critical" />
+          <Connector active />
           <Node icon={Server} label="Apache / mod_php" compact={compact} />
-          <Connector active tone="critical" />
-          <Node icon={AlertTriangle} label="Unsafe cleanup state" tone="critical" compact={compact} />
+          <Connector active />
+          <Node icon={AlertTriangle} label="Unsafe cleanup state" danger compact={compact} />
         </div>
       </div>
 
       <div>
-        {!compact && (
-          <div className="mb-2 flex items-center gap-1.5 label-console">
-            <span className="h-1.5 w-1.5 rounded-full bg-vulnerable" /> PHP-FPM — two-request path
-          </div>
-        )}
+        {!compact && <p className="mb-2 text-xs font-semibold text-muted-foreground">PHP-FPM — two-request path</p>}
         <div className="flex items-center overflow-x-auto pb-1" key={`row2-${tick}`}>
           <Node icon={Globe} label="Request A" compact={compact} />
-          <Connector active tone="vulnerable" />
+          <Connector active />
           <Node icon={Server} label="FPM worker" compact={compact} />
-          <Connector active tone="vulnerable" />
-          <Node icon={RotateCcw} label="Stale state" tone="vulnerable" compact={compact} />
-          <Connector active tone="vulnerable" />
+          <Connector active />
+          <Node icon={RotateCcw} label="Stale state" danger compact={compact} />
+          <Connector active />
           <Node icon={Globe} label="Request B" compact={compact} />
         </div>
       </div>

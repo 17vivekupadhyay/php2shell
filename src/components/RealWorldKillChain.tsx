@@ -92,7 +92,7 @@ export function RealWorldKillChain() {
       <div className="relative mb-8">
         <div className="absolute left-0 right-0 top-5 h-0.5 bg-border" />
         <motion.div
-          className="absolute left-0 top-5 h-0.5 bg-gradient-to-r from-critical via-vulnerable to-safe"
+          className="absolute left-0 top-5 h-0.5 bg-php"
           animate={{ width: `${progressPct}%` }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
         />
@@ -153,7 +153,7 @@ export function RealWorldKillChain() {
           {stage.stats && (
             <div className="grid grid-cols-2 gap-2 mb-4 sm:grid-cols-4">
               {stage.stats.map((s) => (
-                <div key={s.label} className="rounded-lg border border-border bg-card/50 p-3 text-center">
+                <div key={s.label} className="border border-border p-3 text-center">
                   <div className="font-heading text-lg font-bold text-vulnerable">{s.value}</div>
                   <div className="mt-0.5 text-[11px] leading-tight text-muted-foreground">{s.label}</div>
                 </div>
@@ -179,8 +179,7 @@ export function RealWorldKillChain() {
                 return (
                   <div
                     key={t.id}
-                    className={cn("rounded-lg border overflow-hidden transition-colors", open ? "border-transparent" : "border-border")}
-                    style={open ? { borderColor: `${stage.colorFrom}80`, boxShadow: `0 0 0 1px ${stage.colorFrom}80` } : undefined}
+                    className={cn("rounded-lg border overflow-hidden transition-colors", open ? "border-php" : "border-border")}
                   >
                     <button
                       onClick={() => setOpenTechnique(open ? null : t.id)}

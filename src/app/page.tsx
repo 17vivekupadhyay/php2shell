@@ -1,4 +1,3 @@
-import { ShieldAlert } from "lucide-react";
 import { Hero } from "@/components/Hero";
 import { AtAGlanceStrip } from "@/components/AtAGlanceStrip";
 import { ArchitectureDiagram } from "@/components/ArchitectureDiagram";
@@ -19,33 +18,24 @@ export default function HomePage() {
       <Hero />
       <AtAGlanceStrip />
 
-      <Section
-        eyebrow="Architecture"
-        title="Two affected paths"
-        description={a.atRisk}
-      >
-        <div className="rounded-xl border border-border bg-card/50 p-5">
+      <Section eyebrow="Architecture" title="Two affected paths" description={a.atRisk}>
+        <div className="border border-border p-5">
           <ArchitectureDiagram />
         </div>
       </Section>
 
-      <Section
-        eyebrow="Incident timeline"
-        title="What actually happened"
-        description={a.summary}
-      >
-        <div className="rounded-xl border border-border bg-card/50 p-4 sm:p-5">
+      <Section eyebrow="Incident timeline" title="What actually happened" description={a.summary}>
+        <div className="border border-border p-4 sm:p-5">
           <RealWorldKillChain />
         </div>
-        <p className="mt-3 flex items-start gap-1.5 text-xs text-muted-foreground">
-          <ShieldAlert className="h-3.5 w-3.5 shrink-0 mt-0.5 text-vulnerable" />
+        <p className="mt-3 text-xs text-muted-foreground">
           This timeline covers public events and the conceptual mechanism only — no exploit trigger or payload
           details are included, since both CVEs were under active exploitation at the time this was written.
         </p>
       </Section>
 
       <Section eyebrow="Root cause" title="How the state becomes unsafe">
-        <div className="rounded-xl border border-border bg-card/50 p-5">
+        <div className="border border-border p-5">
           <MemoryStateDiagram active runKey="root-cause" />
         </div>
       </Section>

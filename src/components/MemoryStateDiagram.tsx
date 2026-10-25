@@ -10,7 +10,7 @@ const STEPS = [
   { label: "Memory allocated", detail: "A piece of request state is set aside", color: "var(--color-muted-foreground)" },
   { label: "Marked “ready” too early", detail: "Counted as usable before setup finishes", color: "var(--color-php)" },
   { label: "OOM interrupts initialization", detail: "A fatal hits in that exact window", color: "var(--color-critical)" },
-  { label: "Cleanup trusts the unsafe state", detail: "The half-built value is used as real", color: "var(--color-vulnerable)" },
+  { label: "Cleanup trusts the unsafe state", detail: "The half-built value is used as real", color: "var(--color-php)" },
 ];
 
 function MemoryStateDiagramInner({ active }: { active: boolean }) {
@@ -46,7 +46,7 @@ function MemoryStateDiagramInner({ active }: { active: boolean }) {
           />
         ))}
         <motion.div
-          className="absolute top-1/2 flex h-5 w-5 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 shadow-lg"
+          className="absolute top-1/2 flex h-4 w-4 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2"
           style={{ borderColor: current.color, backgroundColor: current.color }}
           animate={{ left: `${pct}%` }}
           transition={{ duration: 0.4, ease: "easeInOut" }}

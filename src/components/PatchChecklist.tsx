@@ -57,18 +57,15 @@ export function PatchChecklist() {
   const done = Object.values(checked).filter(Boolean).length;
 
   return (
-    <div className="rounded-lg border border-border bg-card/50 p-3.5">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="label-console">Verification checklist</h3>
-        <span className="label-console">
+    <div className="border border-border p-4">
+      <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+        <span>Verification checklist</span>
+        <span>
           {done}/{ITEMS.length} verified
         </span>
       </div>
-      <div className="h-1 w-full overflow-hidden rounded-full bg-muted mb-3">
-        <div
-          className="h-full rounded-full bg-safe transition-all duration-300"
-          style={{ width: `${(done / ITEMS.length) * 100}%` }}
-        />
+      <div className="h-px w-full bg-border mb-3">
+        <div className="h-px bg-safe transition-all duration-300" style={{ width: `${(done / ITEMS.length) * 100}%` }} />
       </div>
       <div className="space-y-1">
         {ITEMS.map((item) => {
@@ -89,18 +86,13 @@ export function PatchChecklist() {
                   {item.label}
                 </div>
                 {item.command && (
-                  <code className="mt-1 inline-block rounded bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-safe">
+                  <code className="mt-1 inline-block bg-muted px-1.5 py-0.5 font-mono text-[10px] text-foreground">
                     {item.command}
                   </code>
                 )}
                 {item.detail && (
-                  <div
-                    className={cn(
-                      "mt-1 flex items-start gap-1 text-[11px] leading-relaxed",
-                      item.isWarning ? "text-vulnerable" : "text-muted-foreground"
-                    )}
-                  >
-                    {item.isWarning && <AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" />}
+                  <div className="mt-1 flex items-start gap-1 text-[11px] leading-relaxed text-muted-foreground">
+                    {item.isWarning && <AlertTriangle className="h-3 w-3 shrink-0 mt-0.5 text-critical" />}
                     <span>{item.detail}</span>
                   </div>
                 )}

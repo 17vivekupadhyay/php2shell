@@ -58,8 +58,8 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
       "[2026-10-21 UTC] first public reports of active exploitation attempts",
       "[2026-10-22 UTC] NSA / UK NCSC issue joint advisory",
     ],
-    colorFrom: "#f87171",
-    colorTo: "#dc2626",
+    colorFrom: "#a5aed6",
+    colorTo: "#8993be",
   },
   {
     id: "the-flaw",
@@ -74,8 +74,8 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
       "[analysis] PHP's own cleanup code still trusts and acts on the half-built value",
       "[note] exploitation specifics withheld — see cited research for the full technical writeup",
     ],
-    colorFrom: "#fb923c",
-    colorTo: "#ea580c",
+    colorFrom: "#8993be",
+    colorTo: "#6c76a8",
     techniques: [
       {
         id: "modphp-path",
@@ -142,8 +142,8 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
       "[impact] 300+ government sites audited in Pakistan alone",
       "[impact] advisories issued: NSA, UK NCSC, Japan PM's office",
     ],
-    colorFrom: "#fbbf24",
-    colorTo: "#d97706",
+    colorFrom: "#6c76a8",
+    colorTo: "#4f5b93",
     stats: [
       { value: "70–77%", label: "of public web servers run PHP" },
       { value: "5", label: "deployment modes affected — FPM, mod_php, php-cgi, FrankenPHP, LiteSpeed" },
@@ -165,8 +165,8 @@ export const REAL_WORLD_STAGES: IncidentStage[] = [
       "[fix] PHP 8.2.35 — patched (EOL 2026-12-31)",
       "[backport] minimal source-backports released for 7.4 / 8.0 / 8.1 given severity",
     ],
-    colorFrom: "#4ade80",
-    colorTo: "#16a34a",
+    colorFrom: "#4f5b93",
+    colorTo: "#363f6e",
     example: {
       language: "dockerfile",
       vulnerable: `# Dockerfile

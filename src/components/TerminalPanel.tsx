@@ -76,18 +76,7 @@ export function TerminalPanel({
   runKey: string | number;
 }) {
   return (
-    <div
-      className="relative overflow-hidden rounded-xl border bg-[#060608]"
-      style={{ borderColor: `${accentColor}4d`, boxShadow: `0 0 40px -14px ${accentColor}80` }}
-    >
-      {/* scanline texture */}
-      <div
-        className="pointer-events-none absolute inset-0 z-10 opacity-[0.06]"
-        style={{
-          backgroundImage: "repeating-linear-gradient(0deg, #fff 0px, transparent 1px, transparent 3px)",
-        }}
-        aria-hidden
-      />
+    <div className="overflow-hidden rounded-md border border-border bg-[#1a1a1a]">
       {/* key forces a fresh mount per stage/run, so the typewriter's lazy initial state recomputes cleanly */}
       <TerminalBody key={`${lines.join("|")}-${runKey}`} lines={lines} live={live} accentColor={accentColor} />
     </div>
